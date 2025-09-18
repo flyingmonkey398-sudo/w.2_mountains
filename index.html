@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fractal Landscape - GLSL Shader Portfolio</title>
+    <title>Fractal Mountainous Landscape - GLSL Beta</title>
     <link rel="stylesheet" href="styles.css">
     <!-- KaTeX for visualizing formulas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
@@ -11,54 +11,76 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 </head>
 <body>
-    <canvas id="glCanvas"></canvas>
+    <!-- Medium-Sized Canvas Frame (Centered) -->
+    <div class="canvas-container">
+        <canvas id="glCanvas" width="800" height="600"></canvas>
+        <div id="errorOverlay" class="error-overlay" style="display: none;">Shader Load Failed<br><small>Check console and ensure shaders/ folder exists.</small></div>
+    </div>
 
-    <!-- Goals and Formulas Visualization (Collapsible for Clean Start) -->
-    <details id="projectInfo" open style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; max-width: 600px;">
-        <summary><h2>Project Goals & Code Connections</h2></summary>
-        <p><strong>Visual Goal:</strong> Render a fractal landscape using GLSL raymarching (inspired by Inigo Quilez's video: <a href="https://www.youtube.com/watch?v=BFld4EBO2RE" target="_blank">2D Raymarching Experiments</a>). Start with terrain SDFs from your paper's formulas. Interactive: Sliders for haziness/RGB, mouse for sunlight angle.</p>
+    <!-- Goals and Formulas Visualization (KaTeX Fully Fixed) -->
+    <details id="projectInfo" open style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; max-width: 700px; z-index: 10;">
+        <summary><h2>Project Goals & Code Connections (Beta Update)</h2></summary>
+        <p><strong>Visual Goal:</strong> Beta fractal mountainous landscape via GLSL raymarching. Uses your paper's formulas for iterative fractal heightmap. Medium frame (800x600px). Future: Sliders for haziness/RGB, mouse for sunlight.</p>
         
         <h3>Node Visualization of Code Connections</h3>
         <ul>
-            <li><strong>HTML</strong>: Canvas for WebGL; loads CSS vars (e.g., <code>--haziness</code>); includes KaTeX for formula viz; connects JS via <code>&lt;script&gt;</code>.</li>
-            <li><strong>CSS</strong>: Styles canvas/page; vars like <code>--sunlight-rgb</code> can be JS-updated for live changes.</li>
-            <li><strong>JS (script.js)</strong>: Sets up WebGL; loads/compiles shaders; sets uniforms (e.g., <code>u_haziness</code> from sliders); mouse listener for <code>u_sunlightAngle</code>; draws loop.</li>
-            <li><strong>GLSL (shaders/)</strong>: Vertex: Simple quad. Fragment: Raymarch fractals; uses JS uniforms for params.</li>
-            <li><strong>Future: Sliders & Mouse</strong>: HTML <code>&lt;input type="range"&gt;</code> → JS events → Update uniforms → Re-render shader.</li>
+            <li><strong>HTML</strong>: Medium canvas; loads CSS vars; KaTeX for formulas; connects JS.</li>
+            <li><strong>CSS</strong>: Centers frame; vars for haziness/RGB.</li>
+            <li><strong>JS (script.js)</strong>: WebGL 2.0 setup; loads shaders (inline/fetch); uniforms (u_haziness, u_sunlightRGB, u_sunlightAngle, u_time); render loop. No auto-resize—fixed size.</li>
+            <li><strong>GLSL (shaders/)</strong>: Vertex: Quad. Fragment: Implements your formulas in fractal_height() → SDF → raymarch → color/fog/lighting.</li>
+            <li><strong>Future: Sliders & Mouse</strong>: HTML ranges → JS → uniforms (e.g., update u_haziness live).</li>
         </ul>
 
-        <h3>Key Mathematical Formulas (Visualized)</h3>
-        <p>These are placeholders based on Quilez's raymarching/fractal style. Replace with your paper's exact equations (e.g., specific fractal iterations).</p>
+        <h3>All Needed Mathematical Formulas (From Your Paper, Visualized)</h3>
+        <p>Interpreted and LaTeX-rendered from your handwriting. Used directly in GLSL for beta mountainous terrain. (KaTeX fixes: \operatorname{} for functions like mix/atan2; \cdot for dot product.)</p>
         
         <ol>
-            <li><strong>Signed Distance Function (SDF) for Fractal Terrain:</strong><br>
-                \[ d(\mathbf{p}) = |\mathbf{p}.z - f(\mathbf{p}.xy)| - h \]<br>
-                where \( f(\mathbf{p}.xy) \) is fractal noise (e.g., Perlin or Julia set from video/paper), \( h \) is height.</li>
+            <li><strong>Complex Iteration for Fractal Base (Julia-Style):</strong><br>
+                \[ z_0 = x + i y, \quad z_{n+1} = z_n^2 + c \]<br>
+                where \( c \) is constant (e.g., \( c = -0.8 + 0.156 i \)); iterate \( n = 10-20 \) times.<br>
+                Height contribution: \( h = |z_n| \) or escape iterations if \( |z_n| > 2 \).<br>
+                (From top: \( z = (x + i y)^2 + c \), with powers like \( ^3, ^2 \).)</li>
+            
+            <li><strong>Layered Fractal Heightmap (fBm/Mountains):</strong><br>
+                \[ h(x, z) = \sum_{k=0}^{K} a^k \cdot f(x \cdot 2^k, z \cdot 2^k) \]<br>
+                where \( f \) is noise from iteration above, \( a = 0.5 \), \( K=5 \) octaves.<br>
+                Domain warping: \[ x' = x + b \sin(h(x)), \quad z' = z + b \cos(h(z)) \] (b=0.1 for ridges).<br>
+                (From middle: Layered \( f(x) = \sin(x) + \lambda f(x/\lambda) \), polynomials \( x^3 + y^2 \).)</li>
+            
+            <li><strong>Signed Distance Function (SDF) for Terrain:</strong><br>
+                \[ d(\mathbf{p}) = p_y - h(p_x, p_z) - \mathrm{offset} \]<br>
+                Blend for mountains: \( d = \min(d_{\mathrm{terrain}}, d_{\mathrm{peak}} + r) \).<br>
+                (From bottom: \( d(p) = p.y - h \), with slopes \( \partial_x h \).)</li>
             
             <li><strong>Raymarching Loop:</strong><br>
                 \[ t = 0; \quad \mathbf{pos} = \mathbf{ro} + t \cdot \mathbf{rd} \]<br>
-                while \( t < \text{maxDist} \) and steps < maxSteps:<br>
-                \[ d = \text{SDF}(\mathbf{pos}); \quad t += d; \quad \mathbf{pos} += d \cdot \mathbf{rd} \]<br>
-                (Epsilon: \( \epsilon = 0.001 \); from Quilez's 2D experiments, extend to 3D landscape.)</li>
+                while \( t < t_{\max} \) and steps < 100:<br>
+                \[ d = \mathrm{SDF}(\mathbf{pos}); \quad t += \max(d, 0.001); \quad \mathbf{pos} += d \cdot \mathbf{rd} \]<br>
+                (Extend to 3D landscape from Quilez video.)</li>
             
-            <li><strong>Haziness (Atmospheric Fog):</strong><br>
-                \[ \color = \mix(\color, \mathbf{fogColor}, 1.0 - e^{-t \cdot \text{haziness}}) \]<br>
-                (Haziness var: 0-0.1; fogColor from RGB sliders.)</li>
-            
-            <li><strong>Sunlight Angle (Mouse-Driven):</strong><br>
-                \[ \mathbf{sunDir} = (\sin(\theta), \cos(\theta), 1.0) \]<br>
-                where \( \theta = \text{atan2}(mouseY, mouseX) \); lighting: \( \light = \max(0, \dot(\mathbf{normal}, \mathbf{sunDir})) \).</li>
+            <li><strong>Haziness Fog & Sunlight:</strong><br>
+                \[ \mathrm{color} = \operatorname{mix}(\mathrm{color}, \mathrm{fogColor}, 1 - e^{-t \cdot \mathrm{haziness}}) \]<br>
+                \[ \mathrm{light} = \max(0, \mathbf{n} \cdot \mathbf{sunDir}(\theta)) \]<br>
+                \[ \theta = \operatorname{atan2}(\mathrm{mouseY}, \mathrm{mouseX}) \]; RGB from sliders.<br>
+                (Ties to your gradient/slopes for normals.)</li>
         </ol>
         
-        <p><em>Implement in GLSL: Use these in fragment shader's main(). Test with simple sphere SDF first.</em></p>
+        <p><em>GLSL Implementation: fractal_height() uses iteration + fBm; SDF/raymarch in main(). Beta renders gray mountains with fog.</em></p>
     </details>
 
     <script src="script.js"></script>
     <script>
-        // Auto-render KaTeX formulas on load
+        // Auto-render KaTeX
         document.addEventListener('DOMContentLoaded', function() {
             renderMathInElement(document.body, {
-                delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }]
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\[", right: "\\]", display: true },
+                    { left: "\\(", right: "\\)", display: false }
+                ],
+                throwOnError: false, // Don't crash on minor issues
+                preprocess: true // Better custom command handling
             });
         });
     </script>
