@@ -1,0 +1,44 @@
+:root {
+  /* CSS Variables for Easy JS Updates (Future Sliders) */
+  --haziness: 0.05; /* Fog density; JS can set via getComputedStyle */
+  --sunlight-rgb: 1, 1, 0.8; /* RGB for sun color; e.g., JS: root.style.setProperty('--sunlight-rgb', `${r}, ${g}, ${b}`); */
+  --bg-color: #000;
+  --text-color: #fff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+#glCanvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  cursor: crosshair; /* For future mouse tracking */
+}
+
+/* Haziness effect: Future overlay if needed (e.g., via JS-updated opacity) */
+#projectInfo {
+  opacity: calc(1 - var(--haziness) * 10); /* Ties to haziness var */
+  transition: opacity 0.3s;
+}
+
+/* Future Slider Styles (Add when implementing) */
+.slider-container {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+input[type="range"] {
+  width: 200px;
+  margin: 5px;
+}

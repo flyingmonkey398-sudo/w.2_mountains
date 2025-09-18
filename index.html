@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Landscape - GLSL Shader Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- KaTeX for visualizing formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+</head>
+<body>
+    <canvas id="glCanvas"></canvas>
+
+    <!-- Goals and Formulas Visualization (Collapsible for Clean Start) -->
+    <details id="projectInfo" open style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; max-width: 600px;">
+        <summary><h2>Project Goals & Code Connections</h2></summary>
+        <p><strong>Visual Goal:</strong> Render a fractal landscape using GLSL raymarching (inspired by Inigo Quilez's video: <a href="https://www.youtube.com/watch?v=BFld4EBO2RE" target="_blank">2D Raymarching Experiments</a>). Start with terrain SDFs from your paper's formulas. Interactive: Sliders for haziness/RGB, mouse for sunlight angle.</p>
+        
+        <h3>Node Visualization of Code Connections</h3>
+        <ul>
+            <li><strong>HTML</strong>: Canvas for WebGL; loads CSS vars (e.g., <code>--haziness</code>); includes KaTeX for formula viz; connects JS via <code>&lt;script&gt;</code>.</li>
+            <li><strong>CSS</strong>: Styles canvas/page; vars like <code>--sunlight-rgb</code> can be JS-updated for live changes.</li>
+            <li><strong>JS (script.js)</strong>: Sets up WebGL; loads/compiles shaders; sets uniforms (e.g., <code>u_haziness</code> from sliders); mouse listener for <code>u_sunlightAngle</code>; draws loop.</li>
+            <li><strong>GLSL (shaders/)</strong>: Vertex: Simple quad. Fragment: Raymarch fractals; uses JS uniforms for params.</li>
+            <li><strong>Future: Sliders & Mouse</strong>: HTML <code>&lt;input type="range"&gt;</code> → JS events → Update uniforms → Re-render shader.</li>
+        </ul>
+
+        <h3>Key Mathematical Formulas (Visualized)</h3>
+        <p>These are placeholders based on Quilez's raymarching/fractal style. Replace with your paper's exact equations (e.g., specific fractal iterations).</p>
+        
+        <ol>
+            <li><strong>Signed Distance Function (SDF) for Fractal Terrain:</strong><br>
+                \[ d(\mathbf{p}) = |\mathbf{p}.z - f(\mathbf{p}.xy)| - h \]<br>
+                where \( f(\mathbf{p}.xy) \) is fractal noise (e.g., Perlin or Julia set from video/paper), \( h \) is height.</li>
+            
+            <li><strong>Raymarching Loop:</strong><br>
+                \[ t = 0; \quad \mathbf{pos} = \mathbf{ro} + t \cdot \mathbf{rd} \]<br>
+                while \( t < \text{maxDist} \) and steps < maxSteps:<br>
+                \[ d = \text{SDF}(\mathbf{pos}); \quad t += d; \quad \mathbf{pos} += d \cdot \mathbf{rd} \]<br>
+                (Epsilon: \( \epsilon = 0.001 \); from Quilez's 2D experiments, extend to 3D landscape.)</li>
+            
+            <li><strong>Haziness (Atmospheric Fog):</strong><br>
+                \[ \color = \mix(\color, \mathbf{fogColor}, 1.0 - e^{-t \cdot \text{haziness}}) \]<br>
+                (Haziness var: 0-0.1; fogColor from RGB sliders.)</li>
+            
+            <li><strong>Sunlight Angle (Mouse-Driven):</strong><br>
+                \[ \mathbf{sunDir} = (\sin(\theta), \cos(\theta), 1.0) \]<br>
+                where \( \theta = \text{atan2}(mouseY, mouseX) \); lighting: \( \light = \max(0, \dot(\mathbf{normal}, \mathbf{sunDir})) \).</li>
+        </ol>
+        
+        <p><em>Implement in GLSL: Use these in fragment shader's main(). Test with simple sphere SDF first.</em></p>
+    </details>
+
+    <script src="script.js"></script>
+    <script>
+        // Auto-render KaTeX formulas on load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMathInElement(document.body, {
+                delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }]
+            });
+        });
+    </script>
+</body>
+</html>
